@@ -1,5 +1,10 @@
-program:
-	gcc *.c -o out && ./out
+all: compile run
+
+run:
+	./out
+
+compile:
+	gcc *.c -o out
 
 .PHONY: tags
 tags:
