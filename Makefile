@@ -1,10 +1,10 @@
 all: compile run
 
 run:
-	./out
+	./clox
 
 compile:
-	gcc *.c -o out
+	gcc *.c -o clox
 
 .PHONY: tags
 tags:
