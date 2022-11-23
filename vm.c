@@ -61,6 +61,13 @@ static void defineNative(const char* name, NativeFn function) {
 void initVM() {
     resetStack();
     vm.objects = NULL;
+    vm.bytesAllocated = 0;
+    vm.nextGC = 1024 * 1024;
+
+    vm.grayCount = 0;
+    vm.grayCapacity = 0;
+    vm.grayStack = NULL;
+
     initTable(&vm.globals);
     initTable(&vm.strings);
 
@@ -84,7 +91,7 @@ Value pop() {
 }
 
 static Value peek(int distance) {
-    return vm.stackTop[-1-distance];
+    return vm.stackTop[-1 - distance];
 }
 
 static bool call(ObjClosure* closure, int argCount) {
@@ -94,7 +101,7 @@ static bool call(ObjClosure* closure, int argCount) {
         return false;
     }
 
-    if (vm.frameCount == FRAMES_MAX) {
+    if (vm.frameCount >= FRAMES_MAX) {
         runtimeError("Stack overflow.");
         return false;
     }
@@ -163,8 +170,8 @@ static bool isFalsey(Value value) {
 }
 
 static void concatenate() {
-    ObjString* b = AS_STRING(pop());
-    ObjString* a = AS_STRING(pop());
+    ObjString* b = AS_STRING(peek(0));
+    ObjString* a = AS_STRING(peek(1));
 
     int length = a->length + b->length;
     char* chars = ALLOCATE(char, length + 1);
@@ -173,6 +180,8 @@ static void concatenate() {
     chars[length] = '\0';
 
     ObjString* result = takeString(chars, length);
+    pop();
+    pop();
     push(OBJ_VAL(result));
 }
 
@@ -311,7 +320,7 @@ static InterpretResult run() {
             }
             case OP_JUMP: {
                 uint16_t offset = READ_SHORT();
-                if (isFalsey(peek(0))) frame->ip += offset;
+                frame->ip += offset;
                 break;
             }
             case OP_JUMP_IF_FALSE: {

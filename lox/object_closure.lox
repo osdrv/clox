@@ -1,0 +1,29 @@
+var CMD_X = "x";
+var CMD_Y = "y";
+var CMD_ADD = "add";
+
+fun NewVector(x, y) {
+    fun vector(cmd, arg) {
+        if (cmd == CMD_X) {
+            return x;
+        } else if (cmd == CMD_Y) {
+            return y;
+        } else if (cmd == CMD_ADD) {
+            return NewVector(x + arg(CMD_X, nil), y + arg(CMD_Y, nil));
+        }
+    }
+    return vector;
+}
+
+var v1 = NewVector(1, 2);
+var v2 = NewVector(4, 5);
+
+print v1(CMD_X, nil);
+print v1(CMD_Y, nil);
+
+print v2(CMD_X, nil);
+print v2(CMD_Y, nil);
+
+var v3 = v1(CMD_ADD, v2);
+print v3(CMD_X, nil);
+print v3(CMD_Y, nil);
